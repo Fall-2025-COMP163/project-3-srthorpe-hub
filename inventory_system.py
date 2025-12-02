@@ -157,7 +157,7 @@ def use_item(character, item_id, item_data):
         raise InvalidItemTypeError("Only consumable items can be used.")
 
     # Parse effect (e.g., {"health": 20})
-    stat, value = list(item_data["effect"].items())[0]
+    stat, value = parse_item_effect(item_data["effect"])
 
     apply_stat_effect(character, stat, value)
 
@@ -201,7 +201,7 @@ def equip_weapon(character, item_id, item_data):
     if item_data["type"] != "weapon":
         raise InvalidItemTypeError("Item is not a weapon.")
 
-    stat, value = list(item_data["effect"].items())[0]
+    stat, value = parse_item_effect(item_data["effect"])
 
     # Unequip old weapon if exists
     if character.get("equipped_weapon"):
@@ -250,8 +250,8 @@ def equip_armor(character, item_id, item_data):
     if item_data["type"] != "armor":
         raise InvalidItemTypeError("Item is not armor.")
 
-    stat, value = list(item_data["effect"].items())[0]
-
+    stat, value = parse_item_effect(item_data["effect"])
+    old_data = character["item_data"][old_id] if "item_data" in character else None
     # Unequip old armor
     if character.get("equipped_armor"):
         old_armor = character["equipped_armor"]
@@ -286,7 +286,7 @@ def unequip_weapon(character):
         return None
 
     weapon_id = character["equipped_weapon"]
-    stat, value = list(character["item_data"][weapon_id]["effect"].items())[0]
+    stat, value = parse_item_effect(character["item_data"][weapon_id]["effect"])
 
     character[stat] -= value  # remove stat buff
 
@@ -492,3 +492,4 @@ if __name__ == "__main__":
     #     print(result)
     # except ItemNotFoundError:
     #     print("Item not found")
+
