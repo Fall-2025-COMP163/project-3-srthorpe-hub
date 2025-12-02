@@ -8,13 +8,14 @@ AI Usage: [Document any AI assistance used]
 
 This module handles quest management, dependencies, and completion.
 """
-
+import character_manager
 from custom_exceptions import (
     QuestNotFoundError,
     QuestRequirementsNotMetError,
     QuestAlreadyCompletedError,
     QuestNotActiveError,
-    InsufficientLevelError
+    InsufficientLevelError,
+    
 )
 
 # ============================================================================
@@ -217,14 +218,27 @@ def can_accept_quest(character, quest_id, quest_data_dict):
     """
     # TODO: Implement requirement checking
     # Check all requirements without raising exceptions
-
-     try:
-        accept_quest(character, quest_id, quest_data_dict)
-        # Remove temporarily added quest
-        character["active_quests"].remove(quest_id)
-        return True
-    except Exception:
+    if quest_id not in quest_data_dict:
         return False
+    
+    quest = quest_data_dict[quest_id]
+
+    #level requirement
+    if character.get("level", 0) < quest.get("required_level", 0):
+        return False
+    
+    #already completed
+    if quest_id in character.get("completed_quests", []):
+        return False
+    
+    #prerequisite check
+
+    prereq = quest.get("prerequisite", "NONE")
+    if prereq != "NONE" and prereq not in character.get("completed_quests", []):
+        return False
+    
+    return True
+  
    # pass
 
 def get_quest_prerequisite_chain(quest_id, quest_data_dict):
@@ -272,7 +286,7 @@ def get_quest_completion_percentage(character, quest_data_dict):
     # completed_quests = len(character['completed_quests'])
     # percentage = (completed / total) * 100
 
-     total = len(quest_data_dict)
+    total = len(quest_data_dict)
     completed = len(character.get("completed_quests", []))
     return (completed / total) * 100 if total else 0.0
     #pass
@@ -286,8 +300,16 @@ def get_total_quest_rewards_earned(character, quest_data_dict):
     # TODO: Implement reward calculation
     # Sum up reward_xp and reward_gold for all completed quests
 
-     total_xp = sum(quest_data_dict[qid].get("reward_xp", 0) for qid in character.get("completed_quests", []) if qid in quest_data_dict)
-    total_gold = sum(quest_data_dict[qid].get("reward_gold", 0) for qid in character.get("completed_quests", []) if qid in quest_data_dict)
+    total_xp = sum(
+        quest_data_dict[qid].get("reward_xp", 0) 
+        for qid in character.get("completed_quests", []) 
+        if qid in quest_data_dict
+    )
+    total_gold = sum(
+        quest_data_dict[qid].get("reward_gold", 0) 
+        for qid in character.get("completed_quests", []) 
+        if qid in quest_data_dict
+    )
     return {"total_xp": total_xp, "total_gold": total_gold}
     #pass
 
