@@ -56,7 +56,8 @@ def use_item(character, item_id, item_data):
     stat, value = parse_item_effect(item_data["effect"])
     apply_stat_effect(character, stat, value)
     remove_item_from_inventory(character, item_id)
-    return f"Used {item_data['name']} (+{value} {stat})."
+    item_name = item_data.get('name', item_id)
+    return f"Used {item_name} (+{value} {stat})."
 
 def equip_weapon(character, item_id, item_data):
     if "item_data" not in character:
@@ -76,7 +77,8 @@ def equip_weapon(character, item_id, item_data):
     character[stat] += value
     character["equipped_weapon"] = item_id
     remove_item_from_inventory(character, item_id)
-    return f"Equipped weapon: {item_data['name']}."
+    item_name = item_data.get('name', item_id)
+    return f"Equipped weapon: {item_name}."
 
 def equip_armor(character, item_id, item_data):
     if "item_data" not in character:
